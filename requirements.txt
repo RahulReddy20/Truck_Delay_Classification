@@ -7,6 +7,6 @@ psycopg2
 setuptools
 hopsworks
 hsml
-python-dotenv
 joblib
+seaborn
 -e .
