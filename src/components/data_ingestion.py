@@ -66,7 +66,7 @@ class DataIngestion:
     def process_csv_file(self, csv_url):
         """Process a CSV file from the given URL and insert its data into a database table."""
         if self.engine is None:
-            connect(self.db_config)
+            self.engine = connect(self.db_config)
 
         csv_filename = os.path.basename(csv_url).replace('.csv', '')
         table_name = csv_filename  

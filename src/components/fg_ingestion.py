@@ -77,19 +77,22 @@ class fgIngestion:
                     print(f"Column '{col}' in table '{table_name}' is not a valid date format.")
             self.dataframes_dict[table_name] = df
 
-    def process_feature_groups(self, fs):
+    def process_feature_groups(self, fs, ver, dataframes=None):
         """
         Create or retrieve feature groups and insert data only if it is a new feature group.
         :param fs: Feature Store object to interact with feature groups.
         """
-        for table_name, df in self.dataframes_dict.items():
+        if dataframes is None:
+            dataframes = self.dataframes_dict
+        
+        for table_name, df in dataframes.items():
             feature_group_name = f"{table_name}_fg"
             primary_key = ['id']
             event_time_column = 'event_time'
             
             try:
                 # Attempt to retrieve the existing feature group
-                feature_group = fs.get_feature_group(name=feature_group_name, version=1)
+                feature_group = fs.get_feature_group(name=feature_group_name, version=ver)
                 print(f"Feature group '{feature_group_name}' already exists. Skipping creation and insertion.")
             except Exception as e:
                 # Handle any exception that occurs during retrieval (e.g., group not found)
@@ -98,7 +101,7 @@ class fgIngestion:
                 # Create a new feature group
                 feature_group = fs.create_feature_group(
                     name=feature_group_name,
-                    version=1,
+                    version=ver,
                     description=f"Feature group for {feature_group_name}",
                     primary_key=primary_key,
                     event_time=event_time_column
@@ -119,7 +122,7 @@ class fgIngestion:
         for table_name, df in self.dataframes_dict.items():
             try:
                 # Save each DataFrame as a table in the database
-                df.to_sql(name=table_name+'_cleaned', con=self.engine, if_exists=if_exists, index=False)
+                df.to_sql(name=table_name, con=self.engine, if_exists=if_exists, index=False)
                 print(f"Table '{table_name}'_cleaned successfully saved to the database.")
             except Exception as e:
                 print(f"Error saving table '{table_name}_cleaned': {e}")

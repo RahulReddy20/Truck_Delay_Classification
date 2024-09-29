@@ -24,7 +24,7 @@ class fgIngestionPipeline:
             
             project = fgIngestion_obj.hopswork_login()
             fs = project.get_feature_store()
-            fgIngestion_obj.process_feature_groups(fs)
+            fgIngestion_obj.process_feature_groups(fs, 1)
             
         except Exception as e:
             print(f"An error occurred: {e}")
