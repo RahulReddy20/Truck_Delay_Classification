@@ -35,3 +35,11 @@ def close_connection(engine):
     if engine:
         engine.dispose()
         print("Connection closed.")
+        
+def get_table_names(engine):
+    """Inspect and list table names in the connected database."""
+    if not engine:
+        raise Exception("Database not connected.")
+    
+    inspector = inspect(engine)
+    return inspector.get_table_names()

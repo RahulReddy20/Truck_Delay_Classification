@@ -1,12 +1,13 @@
 import hopsworks
 import pandas as pd
-import joblib
+import time
 from datetime import datetime
 from sqlalchemy import create_engine, MetaData
 from constants import *
 import warnings
 from utils.config_utils import *
 from utils.database_utils import *
+from utils.feature_group_utils import create_feature_groups
 
 class fgIngestion:
     def __init__(self):
@@ -77,39 +78,54 @@ class fgIngestion:
                     print(f"Column '{col}' in table '{table_name}' is not a valid date format.")
             self.dataframes_dict[table_name] = df
 
-    def process_feature_groups(self, fs, ver, dataframes=None):
+    def process_feature_groups(self, fs, ver, dataframes=None, batch_size=5):
         """
-        Create or retrieve feature groups and insert data only if it is a new feature group.
+        Create or retrieve feature groups and insert data in batches to avoid exceeding
+        Hopsworks' limit of 5 parallel job executions.
+        
         :param fs: Feature Store object to interact with feature groups.
+        :param ver: Version of the feature group.
+        :param dataframes: Dictionary of table names to DataFrames. Defaults to self.dataframes_dict.
+        :param batch_size: The number of DataFrames to process at a time. Defaults to 5.
         """
         if dataframes is None:
             dataframes = self.dataframes_dict
+
+        create_feature_groups(fs, ver, dataframes, batch_size)
+
+    # def process_feature_groups(self, fs, ver, dataframes=None):
+    #     """
+    #     Create or retrieve feature groups and insert data only if it is a new feature group.
+    #     :param fs: Feature Store object to interact with feature groups.
+    #     """
+    #     if dataframes is None:
+    #         dataframes = self.dataframes_dict
         
-        for table_name, df in dataframes.items():
-            feature_group_name = f"{table_name}_fg"
-            primary_key = ['id']
-            event_time_column = 'event_time'
+    #     for table_name, df in dataframes.items():
+    #         feature_group_name = f"{table_name}_fg"
+    #         primary_key = ['id']
+    #         event_time_column = 'event_time'
             
-            try:
-                # Attempt to retrieve the existing feature group
-                feature_group = fs.get_feature_group(name=feature_group_name, version=ver)
-                print(f"Feature group '{feature_group_name}' already exists. Skipping creation and insertion.")
-            except Exception as e:
-                # Handle any exception that occurs during retrieval (e.g., group not found)
-                print(f"Feature group '{feature_group_name}' not found. Creating a new feature group. Error: {e}")
+    #         try:
+    #             # Attempt to retrieve the existing feature group
+    #             feature_group = fs.get_feature_group(name=feature_group_name, version=ver)
+    #             print(f"Feature group '{feature_group_name}' already exists. Skipping creation and insertion.")
+    #         except Exception as e:
+    #             # Handle any exception that occurs during retrieval (e.g., group not found)
+    #             print(f"Feature group '{feature_group_name}' not found. Creating a new feature group. Error: {e}")
                 
-                # Create a new feature group
-                feature_group = fs.create_feature_group(
-                    name=feature_group_name,
-                    version=ver,
-                    description=f"Feature group for {feature_group_name}",
-                    primary_key=primary_key,
-                    event_time=event_time_column
-                )
+    #             # Create a new feature group
+    #             feature_group = fs.create_feature_group(
+    #                 name=feature_group_name,
+    #                 version=ver,
+    #                 description=f"Feature group for {feature_group_name}",
+    #                 primary_key=primary_key,
+    #                 event_time=event_time_column
+    #             )
                 
-                # Insert the DataFrame into the newly created feature group
-                feature_group.insert(df)
-                print(f"Inserted data into new feature group: {feature_group_name}")
+    #             # Insert the DataFrame into the newly created feature group
+    #             feature_group.insert(df)
+    #             print(f"Inserted data into new feature group: {feature_group_name}")
                 
     def save_dataframes_to_db(self, if_exists='replace'):
         """
