@@ -4,7 +4,7 @@ from utils.feature_group_utils import hopswork_login, fetch_df_from_feature_grou
 from constants import CONFIG_FILE_PATH
 from components.data_cleaning import DataCleaning
 
-STAGE_NAME = "Data Claning"
+STAGE_NAME = "Data Cleaning"
 
 class DataCleaningPipeline():
     def __init__(self):
@@ -41,7 +41,7 @@ class DataCleaningPipeline():
             outliers_df = data_cleaning_obj.iqr_outliers(df, columns)
             df_dict[table_name] = data_cleaning_obj.drop_subset_rows(df, outliers_df)
             
-        print(df_dict)
+        # print(df_dict)
         
         create_feature_groups(fs, 2, df_dict)
             

@@ -9,4 +9,6 @@ hopsworks
 hsml
 joblib
 seaborn
+xgboost
+
 -e .

@@ -126,7 +126,13 @@ def create_feature_groups(fs, ver, dataframes, batch_size=5):
         for table_name in current_batch:
             df = dataframes[table_name]
             feature_group_name = f"{table_name}"
-            primary_key = ['id']
+            if 'id' in df.columns:
+                primary_key = ['id']
+            elif 'unique_id' in df.columns:
+                primary_key = ['unique_id']
+            else:
+                raise ValueError(
+                    f"Neither 'id' nor 'unique_id' exists in the DataFrame for table: {table_name}")
             event_time_column = 'event_time'
             
             try:

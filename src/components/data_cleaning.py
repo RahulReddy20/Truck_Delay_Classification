@@ -1,6 +1,4 @@
-import hopsworks
 import pandas as pd
-from utils.feature_group_utils import fetch_df_from_feature_groups
 
 class DataCleaning():
     def __init__(self):
