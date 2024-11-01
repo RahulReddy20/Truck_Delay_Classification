@@ -10,5 +10,5 @@ hsml
 joblib
 seaborn
 xgboost
-
+streamlit
 -e .
