@@ -41,14 +41,11 @@ class DataPreparation():
         return dataframes
 
     def add_datetime_column(self, dataframe, date_column, hour_column):
-        # Create a new 'date_time' column by adding 'date' and 'hour'
         dataframe['date_time'] = dataframe[date_column] + \
             pd.to_timedelta(dataframe[hour_column] // 100, unit='h')
 
-        # Drop the original 'date' and 'hour' columns
         dataframe = dataframe.drop(columns=[date_column, hour_column])
 
-        # Insert the 'date_time' column at the second position
         dataframe.insert(1, 'date_time', dataframe.pop('date_time'))
 
         return dataframe
@@ -65,10 +62,8 @@ class DataPreparation():
 
     def merge_data(self, df_left, df_right, on_cols=None, left_on=None, right_on=None, how='left'):
         if on_cols:
-            # Use the same columns for both dataframes to join on
             return pd.merge(df_left, df_right, on=on_cols, how=how)
         elif left_on and right_on:
-            # Use different columns to join from left and right dataframes
             return pd.merge(df_left, df_right, left_on=left_on, right_on=right_on, how=how)
         else:
             raise ValueError(

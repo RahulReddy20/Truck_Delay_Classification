@@ -22,7 +22,7 @@ class DataPreparationPipeline():
         data_preparation_obj = DataPreparation()
 
         df_dict = data_preparation_obj.drop_event_time_column(
-            df_dict)  # drop event_time_column
+            df_dict)  
 
         subsets_to_drop_duplicates = {
             'city_weather_fg': ['city_id', 'date', 'hour'],
@@ -34,7 +34,7 @@ class DataPreparationPipeline():
             'traffic_table_fg': ['route_id', 'date', 'hour']
         }
         df_dict = data_preparation_obj.drop_duplicates_in_dataframes(
-            df_dict, subsets_to_drop_duplicates)  # drop duplicates all the duplicates in all the dataframes
+            df_dict, subsets_to_drop_duplicates)  
 
         unnecessary_columns_dict = {
             'city_weather_fg': ['chanceofrain', 'chanceoffog', 'chanceofsnow', 'chanceofthunder'],
@@ -156,7 +156,6 @@ class DataPreparationPipeline():
         # print(final_merge)
         # print(final_merge.isna().sum())
 
-        # Drop dulicated columns from final merge
         final_merge = final_merge.loc[:, ~final_merge.columns.duplicated()]
 
         rename_column_names = {

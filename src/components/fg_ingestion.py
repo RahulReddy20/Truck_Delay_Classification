@@ -22,34 +22,25 @@ class fgIngestion:
         return hopsworks.login(api_key_value=self.api_key)
 
     def add_id_and_event_time_columns(self):
-        """
-        Add 'id' and 'event_time' columns to each DataFrame in the dictionary.
-        """
         today_date = datetime.now().date()
         for table_name, df in self.dataframes_dict.items():
-            # Check if 'id' column exists
             if 'id' not in df.columns:
-                df.insert(0, 'id', range(1, len(df) + 1))  # Insert 'id' column
+                df.insert(0, 'id', range(1, len(df) + 1)) 
                 print(f"'id' column added for table: {table_name}")
             else:
                 print(f"'id' column already exists in table: {table_name}")
 
-            # Check if 'event_time' column exists
             if 'event_time' not in df.columns:
                 df['event_time'] = [today_date] * \
-                    len(df)  # Add 'event_time' column
+                    len(df)  
                 print(f"'event_time' column added for table: {table_name}")
             else:
                 print(
                     f"'event_time' column already exists in table: {table_name}")
 
-            # Update the DataFrame in the dictionary
             self.dataframes_dict[table_name] = df
 
     def fill_missing_string_values(self):
-        """
-        Fill missing values in string columns with the mode value.
-        """
         for table_name, df in self.dataframes_dict.items():
             string_columns = df.select_dtypes(include=['object'])
             missing_values = string_columns.isna().sum()
@@ -68,10 +59,6 @@ class fgIngestion:
                 self.dataframes_dict[table_name] = df
 
     def convert_string_to_datetime(self):
-        """
-        Convert any string columns that resemble date formats into datetime objects.
-        """
-
         warnings.simplefilter(action='ignore', category=UserWarning)
 
         for table_name, df in self.dataframes_dict.items():
@@ -87,31 +74,16 @@ class fgIngestion:
             self.dataframes_dict[table_name] = df
 
     def process_feature_groups(self, fs, ver, dataframes=None, batch_size=5):
-        """
-        Create or retrieve feature groups and insert data in batches to avoid exceeding
-        Hopsworks' limit of 5 parallel job executions.
-
-        :param fs: Feature Store object to interact with feature groups.
-        :param ver: Version of the feature group.
-        :param dataframes: Dictionary of table names to DataFrames. Defaults to self.dataframes_dict.
-        :param batch_size: The number of DataFrames to process at a time. Defaults to 5.
-        """
         if dataframes is None:
             dataframes = self.dataframes_dict
 
         create_feature_groups(fs, ver, dataframes, batch_size)
 
     def save_dataframes_to_db(self, if_exists='replace'):
-        """
-        Save each DataFrame in the dictionary as a table in the database.
-        :param if_exists: Behavior when the table already exists. Options:
-                        'fail', 'replace', 'append'. Default is 'replace'.
-        """
         if self.engine is None:
             print("error connecting to database")
         for table_name, df in self.dataframes_dict.items():
             try:
-                # Save each DataFrame as a table in the database
                 df.to_sql(name=table_name, con=self.engine,
                           if_exists=if_exists, index=False)
                 print(

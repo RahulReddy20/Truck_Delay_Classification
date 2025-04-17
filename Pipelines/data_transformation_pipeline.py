@@ -64,10 +64,8 @@ class DataTransformationPipeline():
         data_transformation_obj.initialize_experiment()
         model_registry = data_transformation_obj.get_hopsworks_registory(project)
         
-        # Get hyperparameter grids
         # param_grids = data_transformation_obj.get_hyperparameter_grids()
         
-        # # Train, tune, and log each model
         # models = {
         #     'Logistic_Regression': LogisticRegression(),
         #     'Random_Forest': RandomForestClassifier(),

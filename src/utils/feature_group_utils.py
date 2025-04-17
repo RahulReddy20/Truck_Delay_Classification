@@ -94,7 +94,6 @@ def hopswork_login():
     return hopsworks.login(api_key_value = api_key)
 
 def fetch_df_from_feature_groups(feature_store, table_names, ver):
-    """Fetch feature groups for the provided table names."""
     feature_groups = [table + '_fg' for table in table_names]
     feature_dataframes = {}
     
@@ -106,22 +105,10 @@ def fetch_df_from_feature_groups(feature_store, table_names, ver):
     return feature_dataframes
 
 def create_feature_groups(fs, ver, dataframes, batch_size=5):
-    """
-    Create or retrieve feature groups and insert data in batches to avoid exceeding
-    Hopsworks' limit of 5 parallel job executions.
-    
-    :param fs: Feature Store object to interact with feature groups.
-    :param ver: Version of the feature group.
-    :param dataframes: Dictionary of table names to DataFrames. Defaults to self.dataframes_dict.
-    :param batch_size: The number of DataFrames to process at a time. Defaults to 5.
-    """
-
-    # Get a list of table names from the dataframes dictionary
     table_names = list(dataframes.keys())
     
-    # Process in batches of 'batch_size'
     for i in range(0, len(table_names), batch_size):
-        current_batch = table_names[i:i + batch_size]  # Get the current batch of up to 5
+        current_batch = table_names[i:i + batch_size] 
 
         for table_name in current_batch:
             df = dataframes[table_name]
@@ -136,14 +123,11 @@ def create_feature_groups(fs, ver, dataframes, batch_size=5):
             event_time_column = 'event_time'
             
             try:
-                # Attempt to retrieve the existing feature group
                 feature_group = fs.get_feature_group(name=feature_group_name, version=ver)
                 print(f"Feature group '{feature_group_name}' already exists. Skipping creation and insertion.")
             except Exception as e:
-                # Handle any exception that occurs during retrieval (e.g., group not found)
                 print(f"Feature group '{feature_group_name}' not found. Creating a new feature group. Error: {e}")
                 
-                # Create a new feature group
                 feature_group = fs.create_feature_group(
                     name=feature_group_name,
                     version=ver,
@@ -152,7 +136,6 @@ def create_feature_groups(fs, ver, dataframes, batch_size=5):
                     event_time=event_time_column
                 )
                 
-                # Insert the DataFrame into the newly created feature group
                 feature_group.insert(df)
                 print(f"Inserted data into new feature group: {feature_group_name}")
                 
@@ -162,21 +145,17 @@ def create_feature_groups(fs, ver, dataframes, batch_size=5):
                     feature_group.update_feature_description(desc["name"], desc["description"])
                     
                 feature_group.statistics_config = {
-                    "enabled": True,        # Enable statistics calculation
-                    "histograms": True,     # Include histograms in the statistics
-                    "correlations": True    # Include correlations in the statistics
+                    "enabled": True,        
+                    "histograms": True,     
+                    "correlations": True    
                 }
                 
-                # Update the statistics configuration for the feature group
                 feature_group.update_statistics_config()
                 
-                # Compute statistics for the feature group
                 # feature_group.compute_statistics()
                     
-        # After processing a batch, ensure there is no parallel job overload
         print(f"Completed processing batch {i // batch_size + 1}.")
         
-        # Wait for a short period to avoid any Hopsworks parallel execution limits
-        time.sleep(30)  # Adjust sleep time as necessary, based on Hopsworks limits and your setup
+        time.sleep(30)  
 
     print("All feature groups processed successfully.")

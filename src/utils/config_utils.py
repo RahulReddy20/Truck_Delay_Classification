@@ -6,9 +6,6 @@ def read_config(config_file):
     return config
 
 def get_db_config(config):
-    """
-    Generates the database configuration dictionary from the provided config.
-    """
     return {
         'dbname': config['DATABASE']['dbname'],
         'user': config['DATABASE']['user'],
